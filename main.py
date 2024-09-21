@@ -5,14 +5,17 @@ import pystray
 import time
 import threading
 import pyautogui
+import math as mt
 #손가락 위치
 fig_position = [0 for i in range(21)]
 #인식 손가락과 거리
 fig_distance = [0 for i in range(21)]
 #onoff
 tracking_on = False
-#인식 손가락
+#action 기준 손가락
 main_fig = 8
+#인식 손가락
+mouse_fig = 0
 #화면 전체 사이즈
 screen_width, screen_height = pyautogui.size()
 # 비율
@@ -21,14 +24,13 @@ def windowsize(fullsize,a):
 
 def distance(main_fig,position):
     try:
-        x=position[main_fig,0]
-        y=position[main_fig,1]
+        x=position[main_fig][0]
+        y=position[main_fig][1]
         for idx in range(len(position)):
-            position[idx] = [x-position[idx,0],y-position[idx,1]]
+            position[idx] = [x-position[idx][0],y-position[idx][1]]
     except:
         pass
     return position
-
 
 def mouse_position(position,idx):
     try:
@@ -55,7 +57,6 @@ def fig_text(frame,fig_idx,position):
     lineType = cv2.LINE_AA
 
     cv2.putText(frame, text, org, fontFace, fontScale, color, thickness, lineType)
-
 # 아이콘에 사용할 이미지 생성 함수
 def create_image():
     # 64x64 크기의 빈 이미지를 생성하고, 그 위에 사각형을 그린다.
@@ -67,7 +68,19 @@ def create_image():
 # 프로그램을 종료하는 함수
 def on_quit(icon, item):
     icon.stop()  # 아이콘을 트레이에서 제거하고 프로그램 종료
-
+#leftclick
+def click(option):
+    notloop = True
+    if option & notloop:
+        try:
+            pyautogui.click()
+            notloop = False
+        except:
+            pass
+    else:
+        notloop = True
+        pass
+#main
 def background_task():
     # MediaPipe 손 객체 초기화
     mp_hands = mp.solutions.hands
@@ -83,6 +96,7 @@ def background_task():
 
     while cap.isOpened():
         success, image = cap.read()  # 웹캠으로부터 프레임 읽기
+        image =  cv2.flip(image, 1)
         if not success:
             print("웹캠을 찾을 수 없습니다.")
             break
@@ -107,8 +121,14 @@ def background_task():
                     # 랜드마크의 x, y, z 좌표를 가져옴
                     fig_position[idx] = [landmark.x,landmark.y]
                     fig_text(image,idx,fig_position)
-                mouse_position(fig_position,main_fig)
+                mouse_position(fig_position,mouse_fig)
                 fig_distance=distance(main_fig,fig_position)
+                try:
+                    print(f"x: {fig_distance[4][0]}, y:{fig_distance[4][0]}, distance:{mt.sqrt(round(fig_distance[4][0],1)**2+round(fig_distance[4][1],1)**2)}")
+                except:
+                    pass
+                    # print(f"x: {fig_distance[4][0]}, y:{fig_distance[4][0]}, distance:error")
+                click(round(mt.sqrt(round(fig_distance[4][0],1)**2+round(fig_distance[4][1],1)**2),2)<=0.09)
                 # for idx,i in enumerate(fig_distance):
                     # print(f"{idx} -> x:{i[0]},y:{i[1]}")
                 
@@ -126,7 +146,6 @@ def background_task():
     # 리소스 해제
     cap.release()
     cv2.destroyAllWindows()
-
 
 # 트레이 아이콘 실행 함수
 def setup_tray_icon():
