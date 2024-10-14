@@ -15,7 +15,7 @@ tracking_on = False
 #action 기준 손가락
 main_fig = 8
 #인식 손가락
-mouse_fig = 0
+mouse_fig = 9
 #화면 전체 사이즈
 screen_width, screen_height = pyautogui.size()
 # 비율
@@ -60,9 +60,7 @@ def fig_text(frame,fig_idx,position):
 # 아이콘에 사용할 이미지 생성 함수
 def create_image():
     # 64x64 크기의 빈 이미지를 생성하고, 그 위에 사각형을 그린다.
-    image = Image.new('RGB', (64, 64), color=(255, 255, 255))
-    dc = ImageDraw.Draw(image)
-    dc.rectangle((10, 10, 55, 55), fill=(0, 0, 0))
+    image = ("imgs/icon.png")
     return image
 
 # 프로그램을 종료하는 함수
@@ -128,7 +126,7 @@ def background_task():
                 except:
                     pass
                     # print(f"x: {fig_distance[4][0]}, y:{fig_distance[4][0]}, distance:error")
-                click(round(mt.sqrt(round(fig_distance[4][0],1)**2+round(fig_distance[4][1],1)**2),2)<=0.09)
+                click(round(mt.sqrt(round(fig_distance[4][0],1)**2+round(fig_distance[4][1],1)**2),2)<=0.1)
                 # for idx,i in enumerate(fig_distance):
                     # print(f"{idx} -> x:{i[0]},y:{i[1]}")
                 
@@ -150,9 +148,9 @@ def background_task():
 # 트레이 아이콘 실행 함수
 def setup_tray_icon():
     # 스레드로 백그라운드 작업 실행
-    task_thread = threading.Thread(target=background_task)
-    task_thread.daemon = True
-    task_thread.start()
+    # task_thread = threading.Thread(target=background_task)
+    # task_thread.daemon = True
+    # task_thread.start()
 
     # 트레이 아이콘 생성 및 메뉴 설정
     icon = pystray.Icon("test_icon", create_image(), "Test Program")
